@@ -1,0 +1,15 @@
+#sidebar {
+	transition: left 0.5s ease-in-out;
+}
+
+#sidebar.deactivated {
+	left: -250px;
+}
+
+#main {
+	transition: padding 0.5s ease-in-out, margin 0.5s ease-in-out;
+}
+
+#main.move {
+	margin: 0;
+}

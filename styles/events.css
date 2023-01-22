@@ -1,0 +1,15 @@
+.events {
+	display: grid;
+	grid-template-columns: repeat(4, 200px);
+
+	grid-gap: 20px;
+}
+
+.event {
+	background-color: white;
+	border-radius: 10px;
+	padding: 10px;
+	width: 200px;
+	height: 200px;
+	box-shadow: 1px 5px 7px 4px rgba(0, 0, 0, 0.2);
+}

@@ -1,0 +1,33 @@
+#hero-section {
+	min-height: 90vh;
+}
+#hero-section-img img {
+	width: 100%;
+	object-fit: contain;
+}
+
+h2 {
+	font-size: 2rem;
+	padding: 2rem 0rem;
+	text-align: center;
+}
+
+p {
+	font-size: 1.3rem;
+	padding: 2rem 0rem;
+	text-align: center;
+}
+
+#buttons-group {
+	display: flex;
+	flex-direction: column;
+
+	padding: 10px 0px;
+	gap: 10px;
+	width: 50%;
+	margin: auto;
+}
+
+#buttons-group button {
+	border-radius: 5px;
+}
