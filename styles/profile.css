@@ -11,6 +11,8 @@ body {
 
 #sidebar ul {
 	list-style: none;
+	padding-right: 40px;
+	padding-left: 40px;
 }
 
 #main {
@@ -61,7 +63,6 @@ body {
 	margin: 0;
 }
 
-
 #toggle i {
 	display: inline-block;
 	color: grey;
@@ -93,13 +94,12 @@ body {
 }
 
 .profile-icon {
-	
 	margin: 1rem;
 	height: 40px;
 	min-width: 40px;
 	border-radius: 50%;
 	border: none;
-	outline: none!important;
+	outline: none !important;
 
 	background-color: red;
 	color: white;
