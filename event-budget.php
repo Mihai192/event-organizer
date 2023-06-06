@@ -207,13 +207,11 @@
 						echo "<tr scope='row'>";
 						echo "<td class='id'>" . $row['id'] . "</td>";
 						echo "<td class='nume'>" . $row['nume'] . "</td>";
-						echo "<td class='nr_unitati'>" . isset($row['nr_unitati']) . "</td>";
+						echo "<td class='nr_unitati'>" . $row['nr_unitati'] . "</td>";
+						echo "<td class='pret-unitate'>" . $row['pret_unitate'] . "</td>";
 						echo "<td class='avans'>" . $row['avans'] . "</td>";
 						echo "<td class='rest_de_plata'>" . $row['rest_de_plata'] . "</td>"; 
-						echo "<td>" . 
-							"<a href='#'> <i class='fa-solid fa-check'></i> </a>" .
-							"<a href='#'> <i class='fa-solid fa-xmark'></i></a>" .
-							"<a href='#'> <i class='fa-solid fa-pen-to-square'></i> </a>" . 
+						echo "<td>" .  
 							"<a href='#'> <i class='fa-solid fa-trash'></i> </a>" . "</td>";
 						echo "</tr>";
 					}
@@ -222,7 +220,7 @@
 					
 					
 					echo "<form id = {$lists[$i]['id']} > 
-								<input type='text' placeholder='Cost nou'>
+								<input type='text' placeholder='Cost nou' required>
 								<input type='submit' name='submit'>
 						  </form>";
 				}
@@ -251,51 +249,28 @@
 		const table = document.querySelector('table');
 		const tableRows = Array.from(table.rows);
 		
-		function checkMark(row, button) {
-			
+		
 
-			const statusCell = row.querySelector('.status');
-
-			
-			statusCell.textContent = 'Terminata';
-
-			updateEventActivityStatus(parseInt(row.querySelector('.id').textContent), 1);
-
-		}
-
-
-
-		function crossMark(row, button) {
-			console.log(row, button);
-
-			const statusCell = row.querySelector('.status');
-
-			
-			statusCell.textContent = 'Neterminata';
-
-			updateEventActivityStatus(parseInt(row.querySelector('.id').textContent), 0);
-		}
-
-
-		function garbageMark(row, button) {
+		function garbageMark(row) {
 			
 			let id = parseInt(row.querySelector('.id').textContent);
 			
-			deleteEventActivity(id, row);
+			deleteItem(id, <?= $event['id'] ?>);
 		}
 
 		function deleteRow(row) {
 			row.remove();
 		}
 
-		function deleteEventActivity(id, row) {
+		function deleteItem(budget_list_id, event_id) {
 			const data = {
-				eventActivityId: id,
+				budget_list_id: budget_list_id,
+				event_id: event_id
 			};
 
 			
 			// Make the HTTP request to the PHP file using fetch
-			fetch('delete-activity.php', {
+			fetch('delete-budget-item.php', {
 				method: 'POST',
 				headers: {
 				'Content-Type': 'application/json'
@@ -313,6 +288,37 @@
 			});
 		}
 
+
+		function addItemToBudgetList(name, budgetListId, eventId) {
+			
+			
+
+			// Create the request body
+			const data = {
+				name: name,
+				budget_list_id: budgetListId,
+				event_id: eventId
+			};
+
+			// Send the API request
+			fetch('add-event-budget-item.php', {
+				method: 'POST',
+				headers: {
+				'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			})
+				.then(response => {
+				if (response.ok) {
+					console.log('Item added successfully!');
+				} else {
+					throw new Error('Error adding item to budget list');
+				}
+				})
+				.catch(error => {
+				console.error(error);
+				});
+			}
 
 		function updateEventActivityStatus(eventActivityId, newStatus) {
 			// Prepare the data to be sent in the request body
@@ -346,31 +352,23 @@
 			row.addEventListener('click', (e) => {
 				e.preventDefault();
 				if (e.target.tagName === 'I') {
-					if (e.target.classList.contains('fa-check')) {
-						checkMark(e.target.parentElement.parentElement.parentElement, e.target);
-					}
-					else if (e.target.classList.contains('fa-pen-to-square')) {
-
-					}
-					else if (e.target.classList.contains('fa-xmark')) {
-						crossMark(e.target.parentElement.parentElement.parentElement, e.target);
-					}
-					else {
-						garbageMark(e.target.parentElement.parentElement.parentElement, e.target);
-					}
+					
+					garbageMark(e.target.parentElement.parentElement.parentElement);
 				}
 			});
 		});
 
-
+		
 
 		const forms = document.querySelectorAll('form');
 
 		forms.forEach((form) => {
-			form.addEventListener('click', (e) => {
+			form.addEventListener('submit', (e) => {
 				e.preventDefault();
-				console.log(e.target.parentElement);
-				//createItemWithName()
+				const input = e.target.parentElement.querySelector('input[type=text]');
+				
+				
+				addItemToBudgetList(input.value, e.target.id, <?= $event["id"] ?>);
 			})
 		});
 
