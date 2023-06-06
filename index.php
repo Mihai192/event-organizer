@@ -1,5 +1,4 @@
 <?php
-
 	header("Location: login.php");
 	die();
 ?>
@@ -65,35 +64,11 @@
 
 	<main>
 		<section id="hero-section">
-			<div id="hero-section-text">
-				<h2>Organizarea evenimentului tău începe aici</h2>
-				<p>EpicPlan este o platformă online special concepută să te ajute în planificarea pas cu pas a evenimentului tău.</p>
-				<div id="buttons-group">
-					<button>Creeaza Cont Gratuit</button>
-					<button>Vezi DEMO</button>	
-				</div>
-			</div>
-			<div id="hero-section-img">
-				<img src="images/laptop-phone.png">
-			</div>
+			
 		</section>
 
 		<section id="advantages-section">
-			<div>
-				<img src="">
-				<h3></h3>
-				<p></p>
-			</div>
-			<div>
-				<img src="">
-				<h3></h3>
-				<p></p>
-			</div>
-			<div>
-				<img src="">
-				<h3></h3>
-				<p></p>
-			</div>
+			
 		</section>
 
 	</main>
