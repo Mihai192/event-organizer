@@ -5,73 +5,69 @@
 
 	session_start();
 
-	if (!isset($_SESSION['session_token']))
-	{
-		header('Location: login.php');
-		die();
-	}
+	if (!checkLogin())
+		_redirect('login.php');
 
 	$error = '';
 	$success = '';
 
-	$servername = DB_SERVER;
-	$username   = DB_USER;
-	$password   = DB_PASS;
-	$database   = DB_NAME;
+	try {
+		$conn = connectToDatabase(DB_SERVER, DB_USER, DB_PASS, DB_NAME);
 
-	$conn = connectToDatabase($servername, $username, $password, $database);
+		$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
+		
+		$result = $conn->query($sql);
 
-	$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
-	$result = $conn->query($sql);
+		if ($result)
+		{	
+			$result = $result->fetch_assoc();
 
+			$nume    = $result['nume'];
+			$prenume = $result['prenume'];
+			$email   = $result['email'];
 
-	if ($result)
-	{	
-		$result = $result->fetch_assoc();
-		$nume   = $result['nume'];
-		$prenume = $result['prenume'];
-		$email  = $result['email'];
-
-		if (!empty($_POST))
-		{
-			if ($_POST['new-password'] != $_POST['repeat-new-password'])
-				$error = 'Different passwords';
-			else
+			if (isset($_POST['new-password']) && isset($_POST['old-password']) && isset($_POST['repeat-new-password']))
 			{
-
-				if ($result['password'] == hash('sha256', $_POST['old-password']))
-				{
-					$user_id = $result['id'];
-
-					try
-					{
-						if (!checkPass($_POST['new-password']))
-							throw new Exception("Not valid password");
-
-						
-
-						$new_password = hash('sha256', $_POST['new-password']);
-						$sql = "UPDATE User SET password='${new_password}' WHERE id=$user_id";
-						
-						
-						if ($conn->query($sql) === true)
-							$success = "Parola schimbata cu success";
-						else
-							throw new Exception("Parola nu a putut fi schimbata. incearca mai tarziu.");
-
-
-					} catch(Exception $e) {
-						$error = $e -> getMessage();
-					}
-					
-					
-					
-				}
+				if ($_POST['new-password'] != $_POST['repeat-new-password'])
+					$error = 'Different passwords';
 				else
-					$error = 'Not correct password';
+				{
+
+					if ($result['password'] == hash('sha256', $_POST['old-password']))
+					{
+						$user_id = $result['id'];
+
+						try
+						{
+							if (!checkPass($_POST['new-password']))
+								throw new Exception("Not valid password");
+
+							
+
+							$new_password = hash('sha256', $_POST['new-password']);
+							$sql = "UPDATE User SET password='${new_password}' WHERE id=$user_id";
+							
+							
+							if ($conn->query($sql) === true)
+								$success = "Parola schimbata cu success";
+							else
+								throw new Exception("Parola nu a putut fi schimbata. incearca mai tarziu.");
+
+
+						} catch(Exception $e) {
+							$error = $e -> getMessage();
+						}
+					}
+					else
+						$error = 'Not correct password';
+				}
 			}
 		}
-	}
+
+	} catch(Exception $e) {
+		 $error = $e -> getMessage();
+	}	
+	
 ?>
 
 <!DOCTYPE html>
@@ -91,8 +87,10 @@
 		<?php require "templates/toggle-dropdown-user.php"; ?>
 
 		<p> 
-			<?php if (isset($error)) 
-				echo $error ?>
+			<?php 
+				if (isset($error)) 
+					echo $error; 
+			?>
 		</p>
 
 		<h1>Change password</h1>
@@ -121,6 +119,7 @@
 
 	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js" integrity="sha512-2rNj2KJ+D8s1ceNasTIex6z4HWyOnEYLVC3FigGOmyQCZc2eBXKgOxQmo3oKLHyfcj53uz4QMsRCWNbLd32Q1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
 
 	<script type="text/javascript" src="scripts/sidebar.js"></script>
