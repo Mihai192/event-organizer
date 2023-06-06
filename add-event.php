@@ -6,12 +6,11 @@
 	session_start();
 
 
-	if (!isset($_SESSION['session_token']))
-	{
-		header('Location: login.php');
-		die();
-	}
-	
+	if (!checkLogin())
+		redirect('login.php');
+
+
+
 	$servername = DB_SERVER;
 	$username   = DB_USER;
 	$password   = DB_PASS;
@@ -169,6 +168,7 @@
 
 		    if(month < 10)
 		        month = '0' + month.toString();
+			
 		    if(day < 10)
 		        day = '0' + day.toString();
 
