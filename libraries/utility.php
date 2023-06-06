@@ -20,6 +20,66 @@
       return hash("sha256", hash("sha256", $email . $pass) . $salt);
    }
    
+   function createToken(mysqli $conn) : string
+   {
+      $token = hash("sha256", generateString(64));
+
+      $sql = "INSERT INTO Token(hash, user_id) VALUES 
+         ('$token', LAST_INSERT_ID())";
+
+      if ($conn->query($sql) === TRUE)
+      {
+         $GLOBALS['success'] = "Cont creat cu succes! A fost trimis un mail pe adresa contului pentru verificare!";
+         return $token;
+      }
+      else
+         throw new Exception("Ceva nu a mers bine! Incearca mai tarziu.");
+   }
+
+
+   function createAccount(mysqli $conn, string $nume, string $prenume, string $email, string $password) : string
+   {
+      $sql = "SELECT * FROM User WHERE email = '${email}'";
+      $results = $conn->query($sql);
+
+      if ($results->num_rows === 0)
+      {
+         $pass = hash("sha256", $password);
+         $user_type = USER;
+         $status    = INACTIVE_ACCOUNT;
+         $salt      = hash("sha256", generateString(64));
+
+         
+         $stmt = $conn->prepare("INSERT INTO User(nume, prenume, email, password, user_type, status)
+         VALUES (?, ?, ?, ?, ?, ?)");
+
+         $stmt->bind_param("ssssii", $nume, $prenume, $email, $pass, $user_type,  $status);
+         
+         $stmt -> execute(); 
+         return createToken($conn);
+         
+         // else
+      //       throw new Exception("Ceva nu a mers bine! Incearca mai tarziu.");
+      }
+      else
+         throw new Exception("nume sau email deja folosite!");
+      
+   }
+
+   function sendVerificationAccountMail($token)
+   {
+      $from = "mail@event-organizer.tk";
+      $to = $email;
+      $subject = "Confirma contul event-organizer";
+      $message = "Click pe link-ul urmator pentru a confirma contul: " . 'https://www.event-organizer.tk/verify-email.php?token=' . $token;
+
+      $headers = "From:" . $from;
+
+      if(!mail($to,$subject,$message, $headers)) 
+         throw "Nu s-a putut trimite mail-ul. Mai incearca odata creearea contului.";
+      
+   }
+
    function containsUppercaseLetter(string $text): bool
    {
       for ($i = 0; $i < strlen($text); $i++) 
@@ -56,4 +116,16 @@
                && containsDigits($text) && strlen($text) > 7;
    }
 
+   function checkLogin()
+   {
+      return isset($_SESSION['session_token']);
+   }
+   
+
+
+   function _redirect($location)
+   {
+      header("Location: " . $location);
+      die();
+   }
 ?>
