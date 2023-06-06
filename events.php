@@ -1,8 +1,12 @@
 <?php
 	require 'libraries/database.php';
-	
 	require "libraries/db_credentials.php";
+	require 'libraries/utility.php';
+
 	session_start();
+
+	if (!checkLogin())
+		_redirect('login.php');
 
 	$eventType = [
 		1 => "nunta",
@@ -11,48 +15,40 @@
 		4 => "corporate"
 	];
 
-	if (isset($_SESSION['session_token']))
+	$servername = DB_SERVER;
+	$username   = DB_USER;
+	$password   = DB_PASS;
+	$database   = DB_NAME;
+
+	$conn = connectToDatabase($servername, $username, $password, $database);
+
+	$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
+	$result = $conn->query($sql);
+
+	if ($result->num_rows) 
 	{
-		$servername = DB_SERVER;
-		$username   = DB_USER;
-		$password   = DB_PASS;
-		$database   = DB_NAME;
+		$result = $result->fetch_assoc();
+		$nume   = $result['nume'];
+		$prenume = $result['prenume'];
+		$email  = $result['email'];
+		$user_id = $result['id'];
 
-		$conn = connectToDatabase($servername, $username, $password, $database);
+		$sql = "SELECT * FROM EventUser WHERE user_id = '${user_id}'";
 
-		$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
-		$result = $conn->query($sql);
+		
+		$result_ = $conn->query($sql);
+		while($event = $result_->fetch_assoc()) {
+			$event_id = $event['event_id'];
 
-		if ($result->num_rows) 
-		{
-			$result = $result->fetch_assoc();
-			$nume   = $result['nume'];
-			$prenume = $result['prenume'];
-			$email  = $result['email'];
-			$user_id = $result['id'];
-
-			$sql = "SELECT * FROM EventUser WHERE user_id = '${user_id}'";
-
-			
-			$result_ = $conn->query($sql);
-			while($event = $result_->fetch_assoc()) {
-
-				$event_id = $event['event_id'];
-				$sql = "SELECT * FROM Event WHERE id = '${event_id}' LIMIT 1";
+			$sql = "SELECT * FROM Event WHERE id = '${event_id}' LIMIT 1";
 
 
-		        $events[] = $conn->query($sql)->fetch_assoc();
-		    }
-			
-		}
+	        $events[] = $conn->query($sql)->fetch_assoc();
+	    }
 		
 	}
-	else
-	{
-
-		header('Location: login.php');
-		die();
-	}
+		
+	
 ?>
 
 
@@ -78,24 +74,26 @@
 			<h2>Evenimentele tale</h2>
 			<a class="btn btn-link" href="add-event.php">Adauga Evenimente</a>
 
-
-			<?php  if (count($events)) {	?>
+			<?php  if (isset($events) && count($events)) {	?>
 					<div class="events">
 					<?php
 						foreach ($events as $event) 
 						{
+							$event_id = $event['id'];
 							$event_name = $event['nume'];
 							$event_type = $eventType[$event['tipEveniment']];
 							$event_date = $event['data'];
 							$event_adresa = $event['adresa'];
 					?>	
+						
 						<div class="event">
 							<span><?= $event_name ?> </span>
 							<p><?= substr($event_date, 0, 10); ?> </p>
 							<p><?= $event_type ?></p>
-							<button>sterge</button>
-							<button>modifica</button>
+							<a href=<?php echo dirname($_SERVER['PHP_SELF']) . "/delete-event.php?event-id=" . $event_id ?> >sterge</a>
+							<a href=<?= dirname($_SERVER['PHP_SELF']) . "/event-sumar.php?event-id=" . $event_id ?> >modifica</a>
 						</div>
+						
 				<?php } ?>
 					</div>
 				<?php
