@@ -340,9 +340,7 @@
 			});
 		}
 
-		document.querySelector('form').addEventListener('click', (e) => {
-			
-		});
+		
 		
 		tableRows.forEach((row) => {
 			row.addEventListener('click', (e) => {
