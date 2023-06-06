@@ -6,72 +6,23 @@
 	
 	session_start();
 	
-	if (isset($_SESSION['session_token']))
-	{
-		header("Location: profile.php");
-		die();
-	}
+	if (checkLogin())
+		redirect('profile.php');
+	
 	
 	$error = '';
 	$success = '';
 
 
-
-	function createToken(mysqli $conn) : string
-	{
-		$token = hash("sha256", generateString(64));
-
-		$sql = "INSERT INTO Token(hash, user_id) VALUES 
-			('$token', LAST_INSERT_ID())";
-
-		if ($conn->query($sql) === TRUE)
-		{
-			$GLOBALS['success'] = "Cont creat cu succes! A fost trimis un mail pe adresa contului pentru verificare!";
-			return $token;
-		}
-		else
-			throw new Exception("Ceva nu a mers bine! Incearca mai tarziu.");
-	}
-
-
-	function createAccount(mysqli $conn, string $nume, string $prenume, string $email, string $password) : string
-	{
-		$sql = "SELECT * FROM User WHERE email = '${email}'";
-		$results = $conn->query($sql);
-
-		if ($results->num_rows === 0)
-		{
-			$pass = hash("sha256", $password);
-			$user_type = USER;
-			$status    = INACTIVE_ACCOUNT;
-			$salt      = hash("sha256", generateString(64));
-
-			
-			$stmt = $conn->prepare("INSERT INTO User(nume, prenume, email, password, user_type, status)
-			VALUES (?, ?, ?, ?, ?, ?)");
-
-			$stmt->bind_param("ssssii", $nume, $prenume, $email, $pass, $user_type,  $status);
-			
-			$stmt -> execute(); 
-			return createToken($conn);
-			
-			// else
- 		// 		throw new Exception("Ceva nu a mers bine! Incearca mai tarziu.");
-		}
-		else
-			throw new Exception("nume sau email deja folosite!");
-		
-	}
-
 	
-
-	// TODO: SQL injection
-	if (!empty($_POST))
+	if (isset($_POST['nume']) && isset($_POST['prenume']) && isset($_POST['email']) 
+		&& isset($_POST['password']) && isset($_POST['repeat-password']))
 	{
-		$nume  = $_POST['nume'];
+		$nume    = $_POST['nume'];
 		$prenume = $_POST['prenume'];
-		$email = $_POST['email'];
-		$pass  = $_POST['password'];
+		$email   = $_POST['email'];
+		$pass    = $_POST['password'];
+
 		$repeatedPassword = $_POST['repeat-password'];
 
 		$servername = DB_SERVER;
@@ -84,22 +35,18 @@
 
 			if ($repeatedPassword !== $pass)
 				throw new Exception("Parolele sunt incorecte.");
+
 			if (!$test)
 				throw new Exception("Email sau parola invalida");
 
+
+			// connect to database
 			$conn = connectToDatabase($servername, $username, $password, $database);
+			// create account
 			$token = createAccount($conn, $nume, $prenume, $email, $pass);
 
-
-			$from = "mail@event-organizer.tk";
-			$to = $email;
-			$subject = "Confirma contul event-organizer";
-			$message = "Click pe link-ul urmator pentru a confirma contul: " . 'https://www.event-organizer.tk/verify-email.php?token=' . $token;
-			$headers = "From:" . $from;
-
-			if(!mail($to,$subject,$message, $headers)) {
-			    throw "Nu s-a putut trimite mail-ul. Mai incearca odata creearea contului.";
-			}
+			// send verification mail
+			sendVerificationAccountMail($token);
 
 		} catch(Exception $e) {
 		 	$error = $e -> getMessage();
