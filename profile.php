@@ -1,35 +1,34 @@
 <?php
 	require 'libraries/database.php';
+	require 'libraries/utility.php';
 	require "libraries/db_credentials.php";
+
 	session_start();
 
-	if (isset($_SESSION['session_token']))
+	if (!checkLogin())
+		_redirect('login.php');
+
+	
+	$servername = DB_SERVER;
+	$username   = DB_USER;
+	$password   = DB_PASS;
+	$database   = DB_NAME;
+
+	$conn = connectToDatabase($servername, $username, $password, $database);
+
+	$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
+	$result = $conn->query($sql);
+
+	if ($result->num_rows) 
 	{
-		$servername = DB_SERVER;
-		$username   = DB_USER;
-		$password   = DB_PASS;
-		$database   = DB_NAME;
-
-		$conn = connectToDatabase($servername, $username, $password, $database);
-
-		$sql = "SELECT * FROM User WHERE session_token = '{$_SESSION['session_token']}' LIMIT 1";
-		$result = $conn->query($sql);
-
-		if ($result->num_rows) 
-		{
-			$result = $result->fetch_assoc();
-			$nume   = $result['nume'];
-			$prenume = $result['prenume'];
-			$email  = $result['email'];
-			$adresa = $result['adresa'] ? $result['adresa'] : 'Adresa nu este setata';
-		}
+		$result  = $result->fetch_assoc();
+		$nume    = htmlspecialchars($result['nume']);
+		$prenume = htmlspecialchars($result['prenume']);
+		$email   = htmlspecialchars($result['email']);
+		$adresa  = $result['adresa'] ? htmlspecialchars($result['adresa']) : 'Adresa nu este setata';
+	}
 		
-	}
-	else
-	{
-		header('Location: login.php');
-		die();
-	}
+	
 ?>
 
 <!DOCTYPE html>
