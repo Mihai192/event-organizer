@@ -81,7 +81,7 @@
 				
 				
 				if ($conn->query($sql) === TRUE) 
-					$success = "Datele au fost updatate";
+					_redirect('profile.php');
 				else
 					$error = "Ceva nu a mers bine. Mai incearca mai tarziu.";
 			}
@@ -114,12 +114,6 @@
 			{
 				echo "<div class=\"alert alert-danger\" role=\"alert\">";
 				echo  $error;
-				echo " </div>";
-			}
-			else if ($success !== '')
-			{
-				echo "<div class=\"alert alert-success\" role=\"alert\">";
-				echo  $success;
 				echo " </div>";
 			}
 		?>
