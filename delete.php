@@ -1,13 +1,11 @@
 <?php
 	require 'libraries/database.php';
 	require "libraries/db_credentials.php";
+	require 'libraries/utility.php';
 	session_start();
 
-	if (!isset($_SESSION['session_token']))
-	{
-		header('Location: login.php');
-		die();
-	}
+	if (!checkLogin())
+		redirect('login.php');
 
 	$error = '';
 
